@@ -6,3 +6,5 @@
 - mongoose
 - svix
 - tailwindcss-animate
+- @clerk/themes
+- react-hook-form
