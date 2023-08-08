@@ -36,3 +36,45 @@ export async function createThread({
     throw new Error(`Error creating Thread: ${error?.message}`);
   }
 }
+
+export async function fetchPosts(pageNumber = 1, pageSize = 20) {
+  try {
+    const isConnected = connectToDB(); // Assuming connectToDB() returns a boolean indicating connection status
+
+    if (!isConnected) {
+      throw new Error("Failed to establish a connection to the database.");
+    }
+
+    // Calculate the number of posts to skip based on page number and page size
+    const skipAmount = (pageNumber - 1) * pageSize;
+
+    // Fetch the posts that have no parents (top-level threads)
+    const postsQuery = Thread.find({
+      parentId: { $in: [null, undefined] },
+    })
+      .sort({ createdAt: "desc" })
+      .skip(skipAmount)
+      .limit(pageSize)
+      .populate({ path: "author", model: User })
+      .populate({
+        path: "children",
+        populate: {
+          path: "author",
+          model: User,
+          select: "_id name parentId image",
+        },
+      });
+
+    const totalPostsCount = await Thread.countDocuments({
+      parentId: { $in: [null, undefined] },
+    });
+
+    const posts = await postsQuery.exec();
+
+    const isNext = totalPostsCount > skipAmount + posts.length;
+
+    return { posts, isNext };
+  } catch (error: any) {
+    throw new Error(`Failed to load thread: ${error.message}`);
+  }
+}
