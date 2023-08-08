@@ -31,8 +31,7 @@ function ProfileHeader({
           </div>
           <div className="flex-1">
             <h1 className="text-left text-heading3-bold text-light-1">
-              {/* {name} */}
-              Name
+              {name}
             </h1>
             <p className="text-base-medium text-gray-1">@{username}</p>
           </div>
